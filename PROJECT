@@ -10,4 +10,14 @@ plugins:
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: migrator
 repo: github.com/abdelghanimeliani/migrator_operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: eurecom.com
+  group: cache
+  kind: Migritor
+  path: github.com/abdelghanimeliani/migrator_operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

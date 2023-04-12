@@ -1,0 +1,12 @@
+apiVersion: cache.eurecom.com/v1alpha1
+kind: Migritor
+metadata:
+  labels:
+    app.kubernetes.io/name: migritor
+    app.kubernetes.io/instance: migritor-sample
+    app.kubernetes.io/part-of: migrator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: migrator
+  name: migritor-sample
+spec:
+  # TODO(user): Add fields here
