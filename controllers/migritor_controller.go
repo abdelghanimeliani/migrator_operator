@@ -56,9 +56,14 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	migrator := &cachev1alpha1.Migritor{}
 	err := r.Get(ctx, req.NamespacedName, migrator)
+	if err != nil {
+		println("********his is from the get*********", err)
+	}
 	podName := &migrator.Spec.SourcePodName
 	containerName := &migrator.Spec.SourcePodContainer
 	sourcePodNamespace := &migrator.Spec.SourcePodNameSpace
+
+	println("these are the source pod infrmations :", *sourcePodNamespace, podName, containerName)
 
 	// Load client certificate and key
 	cert, err := tls.LoadX509KeyPair("/etc/kubernetes/pki/apiserver-kubelet-client.crt", "/etc/kubernetes/pki/apiserver-kubelet-client.key")
