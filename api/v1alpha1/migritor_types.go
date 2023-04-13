@@ -29,14 +29,14 @@ type MigritorSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of Migritor. Edit migritor_types.go to remove/update
-	Foo                     string   `json:"foo,omitempty"`
-	SourcePodName           string   `json:"source_pod_name,omitempty"`
-	SourcePodNameSpace      string   `json:"source_pod_name_space,omitempty"`
-	SourcePodContainers     []string `json:"source_pod_containers,omitempty"`
-	SourceNodeId            string   `json:"sourceNodeId,omitempty"`
-	DestinationNodeId       string   `json:"destinationNodeId,omitempty"`
-	DestinationPodName      string   `json:"destinationPodName,omitempty"`
-	DestinationPodNameSpace string   `json:"destinationPodName_space,omitempty"`
+	Foo                     string `json:"foo,omitempty"`
+	SourcePodName           string `json:"source_pod_name,omitempty"`
+	SourcePodNameSpace      string `json:"source_pod_name_space,omitempty"`
+	SourcePodContainer      string `json:"source_pod_container,omitempty"`
+	SourceNodeId            string `json:"sourceNodeId,omitempty"`
+	DestinationNodeId       string `json:"destinationNodeId,omitempty"`
+	DestinationPodName      string `json:"destinationPodName,omitempty"`
+	DestinationPodNameSpace string `json:"destinationPodName_space,omitempty"`
 }
 
 // MigritorStatus defines the observed state of Migritor

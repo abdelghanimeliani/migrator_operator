@@ -45,10 +45,8 @@ spec:
                 description: Foo is an example field of Migritor. Edit migritor_types.go
                   to remove/update
                 type: string
-              source_pod_containers:
-                items:
-                  type: string
-                type: array
+              source_pod_container:
+                type: string
               source_pod_name:
                 type: string
               source_pod_name_space:
