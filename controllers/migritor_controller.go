@@ -54,6 +54,12 @@ type MigritorReconciler struct {
 func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
+	migrator := &cachev1alpha1.Migritor{}
+	err := r.Get(ctx, req.NamespacedName, migrator)
+	podName := &migrator.Spec.SourcePodName
+	containerName := &migrator.Spec.SourcePodContainer
+	sourcePodNamespace := &migrator.Spec.SourcePodNameSpace
+
 	// Load client certificate and key
 	cert, err := tls.LoadX509KeyPair("/etc/kubernetes/pki/apiserver-kubelet-client.crt", "/etc/kubernetes/pki/apiserver-kubelet-client.key")
 	if err != nil {
@@ -77,7 +83,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	httpClient := &http.Client{Transport: transport}
 
 	// Send HTTPS POST request
-	url := "https://localhost:10250/checkpoint/default/webserver/webserver"
+	url := "https://localhost:10250/checkpoint/" + *sourcePodNamespace + *podName + *containerName
 	postRequest, err := http.NewRequest("POST", url, nil)
 	if err != nil {
 		panic(err)
