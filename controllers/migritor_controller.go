@@ -18,6 +18,11 @@ package controllers
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -49,7 +54,47 @@ type MigritorReconciler struct {
 func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	// Load client certificate and key
+	cert, err := tls.LoadX509KeyPair("/etc/kubernetes/pki/apiserver-kubelet-client.crt", "/etc/kubernetes/pki/apiserver-kubelet-client.key")
+	if err != nil {
+		panic(err)
+	}
+	// Load CA certificate
+	caCert, err := ioutil.ReadFile("/etc/kubernetes/pki/ca.crt")
+	if err != nil {
+		panic(err)
+	}
+
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	// Create HTTPS client with certificate and key authentication
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      caCertPool,
+	}
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	httpClient := &http.Client{Transport: transport}
+
+	// Send HTTPS POST request
+	url := "https://localhost:10250/checkpoint/default/webserver/webserver"
+	postRequest, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := httpClient.Do(postRequest)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	// Print response status code and body
+	fmt.Println(resp.Status)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(body))
 
 	return ctrl.Result{}, nil
 }
