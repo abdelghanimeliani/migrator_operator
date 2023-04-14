@@ -66,7 +66,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	println("these are the source pod infrmations :", *sourcePodNamespace, *podName, *containerName)
 
 	// Load client certificate and key
-	cert, err := tls.LoadX509KeyPair("/etc/kubernetes/pki/apiserver-kubelet-client.crt", "/etc/kubernetes/pki/apiserver-kubelet-client.key")
+	cert, err := tls.LoadX509KeyPair("/etc/apiserver-kubelet-client.crt", "/etc/kubernetes/pki/apiserver-kubelet-client.key")
 	if err != nil {
 		panic(err)
 	}
