@@ -88,7 +88,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	httpClient := &http.Client{Transport: transport}
 
 	// Send HTTPS POST request
-	url := "https://localhost:10250/checkpoint/" + *sourcePodNamespace + "/" + *podName + "/" + *containerName
+	url := "https://kubemasterfedora:10250/checkpoint/" + *sourcePodNamespace + "/" + *podName + "/" + *containerName
 	postRequest, err := http.NewRequest("POST", url, nil)
 	if err != nil {
 		panic(err)
