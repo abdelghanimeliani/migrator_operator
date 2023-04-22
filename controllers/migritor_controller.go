@@ -20,16 +20,25 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
+	is "github.com/containers/image/v5/storage"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	cachev1alpha1 "github.com/abdelghanimeliani/migrator_operator/api/v1alpha1"
+	"github.com/containers/buildah"
+	"github.com/containers/common/pkg/config"
+	"github.com/containers/image/v5/types"
+	"github.com/containers/storage"
+	"github.com/containers/storage/pkg/unshare"
+	"github.com/sirupsen/logrus"
 )
 
 // MigritorReconciler reconciles a Migritor object
@@ -108,7 +117,82 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	fmt.Println(string(body))
 
+	fmt.Println("checking done ... ✅")
 	// trying to build
+	if buildah.InitReexec() {
+		return ctrl.Result{}, nil
+	}
+	unshare.MaybeReexecUsingUserNamespace(false)
+	fmt.Println("start building ...")
+
+	buildStoreOptions, err := storage.DefaultStoreOptionsAutoDetectUID()
+	if err != nil {
+		panic(err)
+	}
+
+	buildStore, err := storage.GetStore(buildStoreOptions)
+	if err != nil {
+		panic(err)
+	}
+	println("this is the buildstore object", buildStore)
+	defer buildStore.Shutdown(false)
+
+	conf, err := config.Default()
+	if err != nil {
+		panic(err)
+	}
+	capabilitiesForRoot, err := conf.Capabilities("root", nil, nil)
+	if err != nil {
+		panic(err)
+	}
+	// Create storage reference
+	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/built_from-the_operator")
+	if err != nil {
+
+		panic(errors.New("failed to parse image name"))
+	}
+
+	// Build an image scratch
+	builderOptions := buildah.BuilderOptions{
+		FromImage:    "scratch",
+		Capabilities: capabilitiesForRoot,
+	}
+	importBuilder, err := buildah.NewBuilder(context.TODO(), buildStore, builderOptions)
+	if err != nil {
+		panic(err)
+	}
+	// Clean up buildah working container
+	defer func() {
+		if err := importBuilder.Delete(); err != nil {
+			logrus.Errorf("Image builder delete failed: %v", err)
+		}
+	}()
+
+	// Export checkpoint into temporary tar file
+	tmpDir, err := os.MkdirTemp("", "checkpoint_image_")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Copy checkpoint from temporary tar file in the image
+	addAndCopyOptions := buildah.AddAndCopyOptions{}
+	if err := importBuilder.Add("", true, addAndCopyOptions, "checkpoint.tar"); err != nil {
+		panic(err)
+	}
+
+	importBuilder.SetAnnotation("io.kubernetes.cri-o.annotations.checkpoint.name", "counter")
+	commitOptions := buildah.CommitOptions{
+		Squash:        true,
+		SystemContext: &types.SystemContext{},
+	}
+
+	// Create checkpoint image
+	id, _, _, err := importBuilder.Commit(context.TODO(), imageRef, commitOptions)
+	if err != nil {
+		panic(err)
+	}
+	logrus.Debugf("Created checkpoint image: %s", id)
 
 	//end of the build
 
