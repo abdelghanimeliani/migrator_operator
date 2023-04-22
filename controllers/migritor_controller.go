@@ -108,6 +108,10 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	fmt.Println(string(body))
 
+	// trying to build
+
+	//end of the build
+
 	return ctrl.Result{}, nil
 }
 
