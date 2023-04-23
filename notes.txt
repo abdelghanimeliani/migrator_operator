@@ -1,0 +1,1 @@
+{"items":["/var/lib/kubelet/checkpoints/checkpoint-counters_default-counter-2023-04-18T16:34:21Z.tar"]}
