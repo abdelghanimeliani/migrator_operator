@@ -174,8 +174,8 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Copy checkpoint from temporary tar file in the image
 	addAndCopyOptions := buildah.AddAndCopyOptions{}
-	if err := importBuilder.Add("", true, addAndCopyOptions, "/var/lib/kubelet/checkpoints/checkpoint-counters_default-counter-2023-04-18T18:26:58Z.tar"); err != nil {
-		print("5================================================================================")
+	if err := importBuilder.Add("", true, addAndCopyOptions, "checkpoint.tar"); err != nil {
+		fmt.Println("5================================================================================")
 		panic(err)
 	}
 
