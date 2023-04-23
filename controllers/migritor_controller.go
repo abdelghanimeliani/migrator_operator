@@ -140,20 +140,18 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		print("1================================================================================")
 		panic(err)
-		print("================================================================================")
 	}
 	capabilitiesForRoot, err := conf.Capabilities("root", nil, nil)
 	if err != nil {
 		print("2================================================================================")
 		panic(err)
-		print("================================================================================")
 	}
 	// Create storage reference
 	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/built_from-the_operator")
 	if err != nil {
 		print("3================================================================================")
 		panic(errors.New("failed to parse image name"))
-		print("================================================================================")
+
 	}
 
 	// Build an image scratch
@@ -165,7 +163,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		print("4================================================================================")
 		panic(err)
-		print("================================================================================")
+
 	}
 	// Clean up buildah working container
 	defer func() {
@@ -179,7 +177,6 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err := importBuilder.Add("", true, addAndCopyOptions, "/var/lib/kubelet/checkpoints/checkpoint-counters_default-counter-2023-04-18T18:26:58Z.tar"); err != nil {
 		print("5================================================================================")
 		panic(err)
-		print("================================================================================")
 	}
 
 	importBuilder.SetAnnotation("io.kubernetes.cri-o.annotations.checkpoint.name", "counter")
@@ -193,7 +190,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		print("6================================================================================")
 		panic(err)
-		print("================================================================================")
+
 	}
 	logrus.Debugf("Created checkpoint image: %s", id)
 
