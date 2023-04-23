@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	is "github.com/containers/image/v5/storage"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -167,13 +166,6 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			logrus.Errorf("Image builder delete failed: %v", err)
 		}
 	}()
-
-	// Export checkpoint into temporary tar file
-	tmpDir, err := os.MkdirTemp("", "checkpoint_image_")
-	if err != nil {
-		panic(err)
-	}
-	defer os.RemoveAll(tmpDir)
 
 	// Copy checkpoint from temporary tar file in the image
 	addAndCopyOptions := buildah.AddAndCopyOptions{}
