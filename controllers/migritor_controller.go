@@ -33,7 +33,6 @@ import (
 
 	cachev1alpha1 "github.com/abdelghanimeliani/migrator_operator/api/v1alpha1"
 	"github.com/containers/buildah"
-	"github.com/containers/common/pkg/config"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
 	"github.com/containers/storage/pkg/unshare"
@@ -136,16 +135,16 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	println("this is the buildstore object", buildStore)
 	defer buildStore.Shutdown(false)
 
-	conf, err := config.Default()
-	if err != nil {
-		print("1================================================================================")
-		panic(err)
-	}
-	capabilitiesForRoot, err := conf.Capabilities("root", nil, nil)
-	if err != nil {
-		print("2================================================================================")
-		panic(err)
-	}
+	// conf, err := config.Default()
+	// if err != nil {
+	// 	print("1================================================================================")
+	// 	panic(err)
+	// }
+	// capabilitiesForRoot, err := conf.Capabilities("root", nil, nil)
+	// if err != nil {
+	// 	print("2================================================================================")
+	// 	panic(err)
+	// }
 	// Create storage reference
 	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/built_from-the_operator")
 	if err != nil {
@@ -156,8 +155,8 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Build an image scratch
 	builderOptions := buildah.BuilderOptions{
-		FromImage:    "scratch",
-		Capabilities: capabilitiesForRoot,
+		FromImage: "scratch",
+		//Capabilities: capabilitiesForRoot,
 	}
 	importBuilder, err := buildah.NewBuilder(context.TODO(), buildStore, builderOptions)
 	if err != nil {
