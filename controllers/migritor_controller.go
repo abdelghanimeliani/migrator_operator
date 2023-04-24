@@ -172,11 +172,11 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}()
 
 	// Copy checkpoint from temporary tar file in the image
-	// addAndCopyOptions := buildah.AddAndCopyOptions{}
-	// if err := importBuilder.Add("", true, addAndCopyOptions, "checkpoint.tar"); err != nil {
-	// 	fmt.Println("5================================================================================")
-	// 	panic(err)
-	// }
+	addAndCopyOptions := buildah.AddAndCopyOptions{}
+	if err := importBuilder.Add("", true, addAndCopyOptions, "checkpoint.tar"); err != nil {
+		fmt.Println("5================================================================================")
+		panic(err)
+	}
 
 	importBuilder.SetAnnotation("io.kubernetes.cri-o.annotations.checkpoint.name", "counter")
 	commitOptions := buildah.CommitOptions{
