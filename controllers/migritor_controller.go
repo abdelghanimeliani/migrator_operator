@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/containers/common/pkg/config"
 	is "github.com/containers/image/v5/storage"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -135,16 +136,16 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	println("this is the buildstore object", buildStore)
 	defer buildStore.Shutdown(false)
 
-	// conf, err := config.Default()
-	// if err != nil {
-	// 	print("1================================================================================")
-	// 	panic(err)
-	// }
-	// capabilitiesForRoot, err := conf.Capabilities("root", nil, nil)
-	// if err != nil {
-	// 	print("2================================================================================")
-	// 	panic(err)
-	// }
+	conf, err := config.Default()
+	if err != nil {
+		print("1================================================================================")
+		panic(err)
+	}
+	capabilitiesForRoot, err := conf.Capabilities("root", nil, nil)
+	if err != nil {
+		print("2================================================================================")
+		panic(err)
+	}
 	// Create storage reference
 	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/built_from-the_operator")
 	if err != nil {
@@ -155,8 +156,8 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Build an image scratch
 	builderOptions := buildah.BuilderOptions{
-		FromImage: "scratch",
-		//Capabilities: capabilitiesForRoot,
+		FromImage:    "scratch",
+		Capabilities: capabilitiesForRoot,
 	}
 	importBuilder, err := buildah.NewBuilder(context.TODO(), buildStore, builderOptions)
 	if err != nil {
@@ -173,7 +174,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Copy checkpoint from temporary tar file in the image
 	addAndCopyOptions := buildah.AddAndCopyOptions{}
-	if err := importBuilder.Add("", false, addAndCopyOptions, "checkpoint.tar"); err != nil {
+	if err := importBuilder.Add("", false, addAndCopyOptions, "checkpoint/checkpoint2.tar"); err != nil {
 		fmt.Println("5================================================================================")
 		panic(err)
 	}
