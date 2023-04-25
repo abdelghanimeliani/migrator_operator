@@ -36,7 +36,6 @@ import (
 	"github.com/containers/buildah"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
-	"github.com/containers/storage/pkg/unshare"
 	"github.com/sirupsen/logrus"
 )
 
@@ -118,10 +117,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	fmt.Println("checking done ... ✅")
 	// trying to build
-	if buildah.InitReexec() {
-		return ctrl.Result{}, nil
-	}
-	unshare.MaybeReexecUsingUserNamespace(false)
+
 	fmt.Println("start building ...")
 
 	buildStoreOptions, err := storage.DefaultStoreOptionsAutoDetectUID()
