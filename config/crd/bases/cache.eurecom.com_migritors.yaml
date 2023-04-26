@@ -47,9 +47,9 @@ spec:
                 description: Foo is an example field of Migritor. Edit migritor_types.go
                   to remove/update
                 type: string
-              registryUsername:
+              registryPassword:
                 type: string
-              rgistryPassword:
+              registryUsername:
                 type: string
               source_pod_container:
                 type: string
