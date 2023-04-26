@@ -154,7 +154,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		panic(err)
 	}
 	// Create storage reference
-	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/built_from-the_operator")
+	imageRef, err := is.Transport.ParseStoreReference(buildStore, "quay.io/abdelghanimeliani/restore-counter")
 	if err != nil {
 		panic(errors.New("failed to parse image name"))
 	}
@@ -206,11 +206,6 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	fmt.Println("trying to push the image to the registry")
 
-	destImageRef, err := is.Transport.ParseStoreReference(buildStore, "quay.io/abdelghanimeliani/restore-counter")
-	if err != nil {
-		panic(errors.New("failed to parse image name"))
-	}
-
 	pushOptions := buildah.PushOptions{
 		SystemContext: &types.SystemContext{
 			DockerAuthConfig: &types.DockerAuthConfig{
@@ -220,7 +215,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		},
 	}
 
-	x1, x2, err := buildah.Push(context.TODO(), "localhost/built_from-the_operator", destImageRef, pushOptions)
+	x1, x2, err := buildah.Push(context.TODO(), "localhost/built_from-the_operator", imageRef, pushOptions)
 	if err != nil {
 		fmt.Println(x1, x2)
 		fmt.Print("failed to push : ", err)
