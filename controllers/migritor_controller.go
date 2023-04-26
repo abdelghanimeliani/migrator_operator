@@ -122,6 +122,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err := json.Unmarshal(body, &checkpointresult); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
+	fmt.Println("the checkpoint path is : " + checkpointresult.Path)
 
 	fmt.Println("checking done ... ✅")
 	// trying to build
@@ -198,7 +199,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	fmt.Println("build  done ... ✅")
 	fmt.Println("image id :", id)
-	fmt.Println("start building")
+	fmt.Println("start pushing the image")
 
 	//end of the build
 
