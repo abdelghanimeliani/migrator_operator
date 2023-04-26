@@ -228,6 +228,8 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	defer rd.Close()
 
+	fmt.Println("push done")
+
 	return ctrl.Result{}, nil
 }
 
