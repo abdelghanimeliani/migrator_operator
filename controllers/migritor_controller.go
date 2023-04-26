@@ -20,6 +20,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -33,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	cachev1alpha1 "github.com/abdelghanimeliani/migrator_operator/api/v1alpha1"
+	"github.com/abdelghanimeliani/migrator_operator/models"
 	"github.com/containers/buildah"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
@@ -115,6 +117,12 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	fmt.Println(string(body))
 
+	var checkpointresult models.CheckpointResponse
+
+	if err := json.Unmarshal(body, &checkpointresult); err != nil { // Parse []byte to the go struct pointer
+		fmt.Println("Can not unmarshal JSON")
+	}
+
 	fmt.Println("checking done ... ✅")
 	// trying to build
 
@@ -145,7 +153,6 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Create storage reference
 	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/built_from-the_operator")
 	if err != nil {
-		print("3================================================================================")
 		panic(errors.New("failed to parse image name"))
 
 	}
@@ -157,7 +164,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	importBuilder, err := buildah.NewBuilder(context.TODO(), buildStore, builderOptions)
 	if err != nil {
-		print("4================================================================================")
+		print("creation of builder object failed: ", err)
 		panic(err)
 
 	}
@@ -170,8 +177,9 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Copy checkpoint from temporary tar file in the image
 	addAndCopyOptions := buildah.AddAndCopyOptions{}
-	if err := importBuilder.Add("", false, addAndCopyOptions, "checkpoint/checkpoint2.tar"); err != nil {
-		fmt.Println("5================================================================================")
+	if err := importBuilder.Add("", false, addAndCopyOptions, checkpointresult.Path); err != nil {
+		fmt.Println(checkpointresult.Path)
+		fmt.Println("add failed:", err)
 		panic(err)
 	}
 
@@ -184,11 +192,13 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Create checkpoint image
 	id, _, _, err := importBuilder.Commit(context.TODO(), imageRef, commitOptions)
 	if err != nil {
-		print("6================================================================================")
+		print("commit failed: ", err)
 		panic(err)
 
 	}
-	logrus.Debugf("Created checkpoint image: %s", id)
+	fmt.Println("build  done ... ✅")
+	fmt.Println("image id :", id)
+	fmt.Println("start building")
 
 	//end of the build
 
