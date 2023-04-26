@@ -1,5 +1,5 @@
 package models
 
 type CheckpointResponse struct {
-	Path string `json:"page"`
+	Path string `json:"items"`
 }
