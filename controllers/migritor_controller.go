@@ -117,12 +117,14 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	fmt.Println(string(body))
 
-	var checkpointresult models.CheckpointResponse
+	var items models.CheckpointResponse
 
-	if err := json.Unmarshal(body, &checkpointresult); err != nil { // Parse []byte to the go struct pointer
+	if err := json.Unmarshal(body, &items); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
-	fmt.Println("the checkpoint path is : " + checkpointresult.Path[0])
+
+	checkpointPath := items.Path[0]
+	fmt.Println("the checkpoint path is : ", checkpointPath)
 
 	fmt.Println("checking done ... ✅")
 	// trying to build
@@ -155,7 +157,6 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/built_from-the_operator")
 	if err != nil {
 		panic(errors.New("failed to parse image name"))
-
 	}
 
 	// Build an image scratch
@@ -178,8 +179,8 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Copy checkpoint from temporary tar file in the image
 	addAndCopyOptions := buildah.AddAndCopyOptions{}
-	if err := importBuilder.Add("", false, addAndCopyOptions, checkpointresult.Path[0]); err != nil {
-		fmt.Println(checkpointresult.Path)
+	if err := importBuilder.Add("", false, addAndCopyOptions, checkpointPath); err != nil {
+		fmt.Println(checkpointPath)
 		fmt.Println("add failed:", err)
 		panic(err)
 	}
@@ -199,9 +200,31 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	fmt.Println("build  done ... ✅")
 	fmt.Println("image id :", id)
-	fmt.Println("start pushing the image")
 
 	//end of the build
+	//trying to push
+
+	fmt.Println("trying to push the image to the registry")
+
+	destImageRef, err := is.Transport.ParseStoreReference(buildStore, "quay.io/abdelghanimeliani/restore-counter")
+	if err != nil {
+		panic(errors.New("failed to parse image name"))
+	}
+
+	pushOptions := buildah.PushOptions{
+		SystemContext: &types.SystemContext{
+			DockerAuthConfig: &types.DockerAuthConfig{
+				Password: "abgmelesi03101902",
+				Username: "abdelghanimeliani",
+			},
+		},
+	}
+
+	x1, x2, err := buildah.Push(context.TODO(), "localhost/built_from-the_operator", destImageRef, pushOptions)
+	if err != nil {
+		fmt.Println(x1, x2)
+		fmt.Print("failed to push : ", err)
+	}
 
 	return ctrl.Result{}, nil
 }
