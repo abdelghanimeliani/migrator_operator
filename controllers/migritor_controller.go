@@ -122,7 +122,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err := json.Unmarshal(body, &checkpointresult); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
-	fmt.Println("the checkpoint path is : " + checkpointresult.Path)
+	fmt.Println("the checkpoint path is : " + checkpointresult.Path[0])
 
 	fmt.Println("checking done ... ✅")
 	// trying to build
@@ -178,7 +178,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Copy checkpoint from temporary tar file in the image
 	addAndCopyOptions := buildah.AddAndCopyOptions{}
-	if err := importBuilder.Add("", false, addAndCopyOptions, checkpointresult.Path); err != nil {
+	if err := importBuilder.Add("", false, addAndCopyOptions, checkpointresult.Path[0]); err != nil {
 		fmt.Println(checkpointresult.Path)
 		fmt.Println("add failed:", err)
 		panic(err)
