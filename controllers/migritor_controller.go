@@ -20,25 +20,27 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
+	cachev1alpha1 "github.com/abdelghanimeliani/migrator_operator/api/v1alpha1"
+	"github.com/abdelghanimeliani/migrator_operator/models"
+	"github.com/containers/buildah"
 	"github.com/containers/common/pkg/config"
 	is "github.com/containers/image/v5/storage"
+	"github.com/containers/image/v5/types"
+	"github.com/containers/storage"
+	dockertypes "github.com/docker/docker/api/types"
+	d "github.com/docker/docker/client"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	cachev1alpha1 "github.com/abdelghanimeliani/migrator_operator/api/v1alpha1"
-	"github.com/abdelghanimeliani/migrator_operator/models"
-	"github.com/containers/buildah"
-	"github.com/containers/image/v5/types"
-	"github.com/containers/storage"
-	"github.com/sirupsen/logrus"
 )
 
 // MigritorReconciler reconciles a Migritor object
@@ -154,7 +156,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		panic(err)
 	}
 	// Create storage reference
-	imageRef, err := is.Transport.ParseStoreReference(buildStore, "quay.io/abdelghanimeliani/restore-counter")
+	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/restore-counter")
 	if err != nil {
 		panic(errors.New("failed to parse image name"))
 	}
@@ -205,21 +207,26 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	//trying to push
 
 	fmt.Println("trying to push the image to the registry")
-
-	pushOptions := buildah.PushOptions{
-		SystemContext: &types.SystemContext{
-			DockerAuthConfig: &types.DockerAuthConfig{
-				Password: "abgmelesi03101902",
-				Username: "abdelghanimeliani",
-			},
-		},
-	}
-
-	x1, x2, err := buildah.Push(context.TODO(), "localhost/built_from-the_operator", imageRef, pushOptions)
+	cli, err := d.NewClientWithOpts(d.FromEnv, d.WithAPIVersionNegotiation())
 	if err != nil {
-		fmt.Println(x1, x2)
-		fmt.Print("failed to push : ", err)
+		fmt.Println(err.Error())
+		panic(err)
 	}
+
+	var authConfig = dockertypes.AuthConfig{
+		Username:      "abdelghanimeliani",
+		Password:      "abgmelesi03101902",
+		ServerAddress: "https://quay.io",
+	}
+	authConfigBytes, _ := json.Marshal(authConfig)
+	authConfigEncoded := base64.URLEncoding.EncodeToString(authConfigBytes)
+
+	opts := dockertypes.ImagePushOptions{RegistryAuth: authConfigEncoded}
+	rd, err := cli.ImagePush(ctx, "abdelghanimeliani/restore-counter", opts)
+	if err != nil {
+		println("failed to push : ", err)
+	}
+	defer rd.Close()
 
 	return ctrl.Result{}, nil
 }
