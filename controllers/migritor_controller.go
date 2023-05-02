@@ -119,14 +119,17 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	checkpointPath := items.Path[0]
 	fmt.Println("the checkpoint path is : ", checkpointPath)
 
-	fmt.Println("checking done ... ✅")
+	fmt.Println("checkpointing done ... ✅")
 	// trying to build
+
 	buildurl := "http://localhost:5678/cointainer/build"
 	buildrequest := models.BuildRequest{
 		CheckpointPath: checkpointPath,
 	}
 
+	fmt.Println("build data: ", buildrequest)
 	marshelledBuildRequest, err := json.Marshal(buildrequest)
+	fmt.Println("marsheled build data: ", marshelledBuildRequest)
 	if err != nil {
 		fmt.Println("impossible to marshall teacher:", err)
 	}
