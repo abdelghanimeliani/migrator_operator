@@ -35,6 +35,8 @@ spec:
           spec:
             description: MigritorSpec defines the desired state of Migritor
             properties:
+              destination:
+                type: string
               destinationNodeId:
                 type: string
               destinationPodName:
@@ -44,6 +46,10 @@ spec:
               foo:
                 description: Foo is an example field of Migritor. Edit migritor_types.go
                   to remove/update
+                type: string
+              registryUsername:
+                type: string
+              rgistryPassword:
                 type: string
               source_pod_container:
                 type: string

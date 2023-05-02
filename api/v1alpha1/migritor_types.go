@@ -37,6 +37,9 @@ type MigritorSpec struct {
 	DestinationNodeId       string `json:"destinationNodeId,omitempty"`
 	DestinationPodName      string `json:"destinationPodName,omitempty"`
 	DestinationPodNameSpace string `json:"destinationPodName_space,omitempty"`
+	Destination             string `json:"destination,omitempty"`
+	RegistryUsername        string `json:"registryUsername,omitempty"`
+	RegistryPassword        string `json:"rgistryPassword,omitempty"`
 }
 
 // MigritorStatus defines the observed state of Migritor

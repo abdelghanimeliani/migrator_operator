@@ -31,6 +31,7 @@ import (
 	"github.com/containers/buildah"
 	"github.com/containers/common/pkg/config"
 	is "github.com/containers/image/v5/storage"
+	"github.com/containers/image/v5/transports/alltransports"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage"
 	"github.com/sirupsen/logrus"
@@ -198,11 +199,35 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	}
 	logrus.Debugf("Created checkpoint image: %s", id)
-
 	fmt.Println("build finish successfully ✅")
 
 	//end of the build
-	//trying to push
+
+	//start pushing
+	destImageRef, err := alltransports.ParseImageName("docker://" + migrator.Spec.Destination)
+
+	if err != nil {
+
+		fmt.Println(err)
+	}
+
+	// Build an image scratch
+	s1, s2, err := buildah.Push(context.TODO(), "localhost/built_from-the_operator", destImageRef, buildah.PushOptions{
+		SystemContext: &types.SystemContext{
+			DockerAuthConfig: &types.DockerAuthConfig{
+				Username: migrator.Spec.RegistryUsername,
+				Password: migrator.Spec.RegistryPassword,
+			},
+		},
+		Store: buildStore,
+	})
+	if err != nil {
+		fmt.Println("can't push the image :", err)
+		panic(err)
+	}
+	fmt.Println(s1)
+	fmt.Println(s2)
+	fmt.Println("push finish successfully ✅")
 
 	return ctrl.Result{}, nil
 }
