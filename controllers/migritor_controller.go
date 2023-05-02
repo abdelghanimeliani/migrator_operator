@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -124,23 +125,32 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	fmt.Println("checking done ... ✅")
 	// trying to build
 	buildurl := "http://kubemasterfedora:5678/cointainer/build"
-	buildPostRequest, err := http.NewRequest("POST", buildurl, nil)
+	buildrequest := models.BuildRequest{
+		CheckpointPath: checkpointPath,
+	}
+
+	marshelledBuildRequest, err := json.Marshal(buildrequest)
+	if err != nil {
+		fmt.Println("impossible to marshall teacher: %s", err)
+	}
+	buildPostRequest, err := http.NewRequest("POST", buildurl, bytes.NewReader(marshelledBuildRequest))
 	if err != nil {
 		panic(err)
 	}
+	buildPostRequest.Header.Set("Content-Type", "application/json")
 
 	buildresp, err := httpClient.Do(buildPostRequest)
 	if err != nil {
 		panic(err)
 	}
 
-	buildbody, err := ioutil.ReadAll(buildresp.Body)
+	buildresponsebody, err := ioutil.ReadAll(buildresp.Body)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(buildbody)
+	fmt.Println(buildresponsebody)
 	var buildResponse models.BuildResponse
-	if err := json.Unmarshal(buildbody, &buildResponse); err != nil { // Parse []byte to the go struct pointer
+	if err := json.Unmarshal(buildresponsebody, &buildResponse); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
 	if err != nil {
