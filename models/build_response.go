@@ -1,5 +1,5 @@
 package models
 
 type BuildResponse struct {
-	error string `json:"error"`
+	Error error `json:"error"`
 }
