@@ -17,17 +17,23 @@ limitations under the License.
 package controllers
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
 	cachev1alpha1 "github.com/abdelghanimeliani/migrator_operator/api/v1alpha1"
 	"github.com/abdelghanimeliani/migrator_operator/models"
+	"github.com/containers/buildah"
+	"github.com/containers/common/pkg/config"
+	is "github.com/containers/image/v5/storage"
+	"github.com/containers/image/v5/types"
+	"github.com/containers/storage"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -122,47 +128,81 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	fmt.Println("checkpointing done ... ✅")
 	// trying to build
 
-	buildurl := "http://localhost:5678/cointainer/build"
-	buildrequest := models.BuildRequest{
-		CheckpointPath: checkpointPath,
-	}
+	fmt.Println("start building ...")
 
-	fmt.Println("build data: ", buildrequest)
-	marshelledBuildRequest, err := json.Marshal(buildrequest)
-	fmt.Println("marsheled build data: ", marshelledBuildRequest)
-	if err != nil {
-		fmt.Println("impossible to marshall teacher:", err)
-	}
-	buildPostRequest, err := http.NewRequest("POST", buildurl, bytes.NewReader(marshelledBuildRequest))
-	if err != nil {
-		panic(err)
-	}
-	buildPostRequest.Header.Set("Content-Type", "application/json")
-
-	buildresp, err := httpClient.Do(buildPostRequest)
+	buildStoreOptions, err := storage.DefaultStoreOptionsAutoDetectUID()
 	if err != nil {
 		panic(err)
 	}
 
-	buildresponsebody, err := ioutil.ReadAll(buildresp.Body)
+	buildStore, err := storage.GetStore(buildStoreOptions)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("the build response body : ", buildresponsebody)
-	var buildResponse models.BuildResponse
-	if err := json.Unmarshal(buildresponsebody, &buildResponse); err != nil {
-		// Parse []byte to the go struct pointer
-		fmt.Println("Can not unmarshal JSON", err)
-	}
+	println("this is the buildstore object", buildStore)
+	defer buildStore.Shutdown(false)
+
+	conf, err := config.Default()
 	if err != nil {
+		print("1================================================================================")
 		panic(err)
 	}
-	defer resp.Body.Close()
+	capabilitiesForRoot, err := conf.Capabilities("root", nil, nil)
+	if err != nil {
+		print("2================================================================================")
+		panic(err)
+	}
+	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/built_with_oprator")
+	if err != nil {
+		print("3================================================================================")
+		panic(errors.New("failed to parse image name"))
+
+	}
+
+	// Build an image scratch
+	builderOptions := buildah.BuilderOptions{
+		FromImage:    "scratch",
+		Capabilities: capabilitiesForRoot,
+	}
+	importBuilder, err := buildah.NewBuilder(context.TODO(), buildStore, builderOptions)
+	if err != nil {
+		print("4================================================================================")
+		panic(err)
+
+	}
+	// Clean up buildah working container
+	defer func() {
+		if err := importBuilder.Delete(); err != nil {
+			logrus.Errorf("Image builder delete failed: %v", err)
+		}
+	}()
+
+	addAndCopyOptions := buildah.AddAndCopyOptions{}
+	if err := importBuilder.Add("", true, addAndCopyOptions, checkpointPath); err != nil {
+		fmt.Println("5================================================================================")
+		fmt.Println("this is the error", err)
+		panic(err)
+	}
+
+	importBuilder.SetAnnotation("io.kubernetes.cri-o.annotations.checkpoint.name", "counter")
+	commitOptions := buildah.CommitOptions{
+		Squash:        true,
+		SystemContext: &types.SystemContext{},
+	}
+
+	// Create checkpoint image
+	id, _, _, err := importBuilder.Commit(context.TODO(), imageRef, commitOptions)
+	if err != nil {
+		print("6================================================================================")
+		panic(err)
+
+	}
+	logrus.Debugf("Created checkpoint image: %s", id)
+
+	fmt.Println("build finish successfully ✅")
 
 	//end of the build
 	//trying to push
-
-	fmt.Println("trying to push the image to the registry")
 
 	return ctrl.Result{}, nil
 }
