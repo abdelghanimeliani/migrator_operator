@@ -148,7 +148,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(buildresponsebody)
+	fmt.Println("the build response body : ", buildresponsebody)
 	var buildResponse models.BuildResponse
 	if err := json.Unmarshal(buildresponsebody, &buildResponse); err != nil {
 		// Parse []byte to the go struct pointer
