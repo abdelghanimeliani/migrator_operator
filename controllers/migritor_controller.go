@@ -21,7 +21,6 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -29,8 +28,6 @@ import (
 
 	cachev1alpha1 "github.com/abdelghanimeliani/migrator_operator/api/v1alpha1"
 	"github.com/abdelghanimeliani/migrator_operator/models"
-	dockertypes "github.com/docker/docker/api/types"
-	d "github.com/docker/docker/client"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -124,7 +121,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	fmt.Println("checking done ... ✅")
 	// trying to build
-	buildurl := "http://kubemasterfedora:5678/cointainer/build"
+	buildurl := "http://localhost:5678/cointainer/build"
 	buildrequest := models.BuildRequest{
 		CheckpointPath: checkpointPath,
 	}
@@ -163,28 +160,6 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	//trying to push
 
 	fmt.Println("trying to push the image to the registry")
-	cli, err := d.NewClientWithOpts(d.FromEnv, d.WithAPIVersionNegotiation())
-	if err != nil {
-		fmt.Println(err.Error())
-		panic(err)
-	}
-
-	var authConfig = dockertypes.AuthConfig{
-		Username:      "abdelghanimeliani",
-		Password:      "abgmelesi03101902",
-		ServerAddress: "https://quay.io",
-	}
-	authConfigBytes, _ := json.Marshal(authConfig)
-	authConfigEncoded := base64.URLEncoding.EncodeToString(authConfigBytes)
-
-	opts := dockertypes.ImagePushOptions{RegistryAuth: authConfigEncoded}
-	rd, err := cli.ImagePush(ctx, "abdelghanimeliani/restore-counter", opts)
-	if err != nil {
-		println("failed to push : ", err)
-	}
-	defer rd.Close()
-
-	fmt.Println("push done")
 
 	return ctrl.Result{}, nil
 }
