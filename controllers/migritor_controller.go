@@ -131,7 +131,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	marshelledBuildRequest, err := json.Marshal(buildrequest)
 	if err != nil {
-		fmt.Println("impossible to marshall teacher: %s", err)
+		fmt.Println("impossible to marshall teacher:", err)
 	}
 	buildPostRequest, err := http.NewRequest("POST", buildurl, bytes.NewReader(marshelledBuildRequest))
 	if err != nil {
