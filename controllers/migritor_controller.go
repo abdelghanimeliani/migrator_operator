@@ -150,8 +150,9 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	fmt.Println(buildresponsebody)
 	var buildResponse models.BuildResponse
-	if err := json.Unmarshal(buildresponsebody, &buildResponse); err != nil { // Parse []byte to the go struct pointer
-		fmt.Println("Can not unmarshal JSON")
+	if err := json.Unmarshal(buildresponsebody, &buildResponse); err != nil {
+		// Parse []byte to the go struct pointer
+		fmt.Println("Can not unmarshal JSON", err)
 	}
 	if err != nil {
 		panic(err)
