@@ -22,21 +22,14 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
 	cachev1alpha1 "github.com/abdelghanimeliani/migrator_operator/api/v1alpha1"
 	"github.com/abdelghanimeliani/migrator_operator/models"
-	"github.com/containers/buildah"
-	"github.com/containers/common/pkg/config"
-	is "github.com/containers/image/v5/storage"
-	"github.com/containers/image/v5/types"
-	"github.com/containers/storage"
 	dockertypes "github.com/docker/docker/api/types"
 	d "github.com/docker/docker/client"
-	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -100,12 +93,12 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	httpClient := &http.Client{Transport: transport}
 
 	// Send HTTPS POST request
-	url := "https://kubemasterfedora:10250/checkpoint/" + *sourcePodNamespace + "/" + *podName + "/" + *containerName
-	postRequest, err := http.NewRequest("POST", url, nil)
+	checkpointurl := "https://kubemasterfedora:10250/checkpoint/" + *sourcePodNamespace + "/" + *podName + "/" + *containerName
+	checkpointPostRequest, err := http.NewRequest("POST", checkpointurl, nil)
 	if err != nil {
 		panic(err)
 	}
-	resp, err := httpClient.Do(postRequest)
+	resp, err := httpClient.Do(checkpointPostRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -130,78 +123,30 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	fmt.Println("checking done ... ✅")
 	// trying to build
-
-	fmt.Println("start building ...")
-
-	buildStoreOptions, err := storage.DefaultStoreOptionsAutoDetectUID()
+	buildurl := "http://kubemasterfedora:5678/cointainer/build"
+	buildPostRequest, err := http.NewRequest("POST", buildurl, nil)
 	if err != nil {
 		panic(err)
 	}
 
-	buildStore, err := storage.GetStore(buildStoreOptions)
+	buildresp, err := httpClient.Do(buildPostRequest)
 	if err != nil {
 		panic(err)
 	}
-	println("this is the buildstore object", buildStore)
-	defer buildStore.Shutdown(false)
 
-	conf, err := config.Default()
+	buildbody, err := ioutil.ReadAll(buildresp.Body)
 	if err != nil {
-		print("1================================================================================")
 		panic(err)
 	}
-	capabilitiesForRoot, err := conf.Capabilities("root", nil, nil)
+	fmt.Println(buildbody)
+	var buildResponse models.BuildResponse
+	if err := json.Unmarshal(buildbody, &buildResponse); err != nil { // Parse []byte to the go struct pointer
+		fmt.Println("Can not unmarshal JSON")
+	}
 	if err != nil {
-		print("2================================================================================")
 		panic(err)
 	}
-	// Create storage reference
-	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/restore-counter")
-	if err != nil {
-		panic(errors.New("failed to parse image name"))
-	}
-
-	// Build an image scratch
-	builderOptions := buildah.BuilderOptions{
-		FromImage:    "scratch",
-		Capabilities: capabilitiesForRoot,
-	}
-	importBuilder, err := buildah.NewBuilder(context.TODO(), buildStore, builderOptions)
-	if err != nil {
-		print("creation of builder object failed: ", err)
-		panic(err)
-
-	}
-	// Clean up buildah working container
-	defer func() {
-		if err := importBuilder.Delete(); err != nil {
-			logrus.Errorf("Image builder delete failed: %v", err)
-		}
-	}()
-
-	// Copy checkpoint from temporary tar file in the image
-	addAndCopyOptions := buildah.AddAndCopyOptions{}
-	if err := importBuilder.Add("", false, addAndCopyOptions, checkpointPath); err != nil {
-		fmt.Println(checkpointPath)
-		fmt.Println("add failed:", err)
-		panic(err)
-	}
-
-	importBuilder.SetAnnotation("io.kubernetes.cri-o.annotations.checkpoint.name", "counter")
-	commitOptions := buildah.CommitOptions{
-		Squash:        true,
-		SystemContext: &types.SystemContext{},
-	}
-
-	// Create checkpoint image
-	id, _, _, err := importBuilder.Commit(context.TODO(), imageRef, commitOptions)
-	if err != nil {
-		print("commit failed: ", err)
-		panic(err)
-
-	}
-	fmt.Println("build  done ... ✅")
-	fmt.Println("image id :", id)
+	defer resp.Body.Close()
 
 	//end of the build
 	//trying to push
