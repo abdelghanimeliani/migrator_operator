@@ -22,10 +22,10 @@ jobs:
         go-version: 1.19
 
     - name: update repos
-      run:  apt update
+      run:  sudo apt update
 
     - name: install btrfs
-      run: apt install btrfs-progs -y
+      run: sudo apt install btrfs-progs -y
 
     - name: Build
       run: go build -v ./...
