@@ -27,6 +27,9 @@ jobs:
     - name: install btrfs
       run: sudo apt install btrfs-progs -y
 
+    - name: install btrfs dev
+      run: sudo apt-get install libbtrfs-dev
+
     - name: Build
       run: go build -v ./...
 
