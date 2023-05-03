@@ -24,11 +24,8 @@ jobs:
     - name: update repos
       run:  sudo apt update
 
-    - name: install btrfs
-      run: sudo apt install btrfs-progs -y
-
     - name: install btrfs dev
-      run: sudo apt-get install libbtrfs-dev
+      run: sudo apt install libbtrfs-dev libgpgme-dev libdevmapper-dev
 
     - name: Build
       run: go build -v ./...
