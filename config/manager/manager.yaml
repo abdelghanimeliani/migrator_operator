@@ -70,7 +70,7 @@ spec:
         - /manager
         args:
         - --leader-elect
-        image: controller:latest
+        image: abdelghanimeliani/migrator_controller:latest
         name: manager
         securityContext:
           allowPrivilegeEscalation: true
