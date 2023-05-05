@@ -70,7 +70,7 @@ spec:
         - /manager
         args:
         - --leader-elect
-        image: abdelghanimeliani/migrator_controller:latest
+        image: docker.io/abdelghanimeliani/migrator_controller:latest
         name: manager
         securityContext:
           allowPrivilegeEscalation: true
