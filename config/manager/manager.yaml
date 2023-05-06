@@ -105,8 +105,8 @@ spec:
             memory: 64Mi
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
-    volumes:
-    - name: hostpath-privileged
-      hostPath:
+      volumes:
+      - name: hostpath-privileged
+        hostPath:
           path: /etc/kubernetes/pki/
 
