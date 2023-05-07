@@ -77,6 +77,8 @@ spec:
           name: credentials
         - mountPath: /var/lib/kubelet/checkpoints/
           name: checkpoints
+        - mountPath: /etc/containers/
+          name: containers
 
         securityContext:
           allowPrivilegeEscalation: true
@@ -114,4 +116,8 @@ spec:
       - name: checkpoints
         hostPath:
           path: /var/lib/kubelet/checkpoints/
+      - name: containers
+        hostPath:
+          path: /etc/containers/
+
 
