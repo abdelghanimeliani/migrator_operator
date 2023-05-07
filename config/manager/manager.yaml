@@ -66,6 +66,7 @@ spec:
         # seccompProfile:
         #   type: RuntimeDefault
       containers:
+        hostNetwork: true
       - command:
         - /manager
         args:
