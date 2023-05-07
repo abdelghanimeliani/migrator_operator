@@ -30,7 +30,7 @@ RUN GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o manager main.go
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 From ubuntu
 RUN apt update
-RUN apt install -y libbtrfs-dev libgpgme-dev libdevmapper-dev
+RUN apt install -y libbtrfs-dev libgpgme-dev libdevmapper-dev buildah 
 COPY --from=builder /workspace/manager .
 
 
