@@ -75,6 +75,8 @@ spec:
         volumeMounts:
         - mountPath: /etc/kubernetes/pki/
           name: credentials
+        - mountPath: /var/lib/kubelet/checkpoints/
+          name: checkpoints
 
         securityContext:
           allowPrivilegeEscalation: true
@@ -109,4 +111,7 @@ spec:
       - name: credentials
         hostPath:
           path: /etc/kubernetes/pki/
+      - name: checkpoints
+        hostPath:
+          path: /var/lib/kubelet/checkpoints/
 
