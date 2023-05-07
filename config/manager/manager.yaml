@@ -74,7 +74,7 @@ spec:
         name: manager
         volumeMounts:
         - mountPath: /etc/kubernetes/pki/
-          name: hostpath-privileged
+          name: credentials
 
         securityContext:
           allowPrivilegeEscalation: true
@@ -106,7 +106,7 @@ spec:
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
       volumes:
-      - name: hostpath-privileged
+      - name: credentials
         hostPath:
           path: /etc/kubernetes/pki/
 
