@@ -28,20 +28,20 @@ RUN GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o manager main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-# From ubuntu
-# RUN apt update
-# RUN apt install -y libbtrfs-dev libgpgme-dev libdevmapper-dev buildah 
+ From ubuntu
+RUN apt update
+ RUN apt install -y libbtrfs-dev libgpgme-dev libdevmapper-dev buildah 
+RUN apt install -y fuse-overlayfs --exclude container-selinux; rm -rf /var/cache /var/log/dnf* /var/log/yum.*
 
+# FROM fedora:latest
 
-FROM fedora:latest
+# # Don't include container-selinux and remove
+# # directories used by dnf that are just taking
+# # up space.
+# RUN yum -y install buildah fuse-overlayfs --exclude container-selinux; rm -rf /var/cache /var/log/dnf* /var/log/yum.*
+# RUN dnf install -y btrfs-progs-devel gpgme-devel device-mapper-devel
 
-# Don't include container-selinux and remove
-# directories used by dnf that are just taking
-# up space.
-RUN yum -y install buildah fuse-overlayfs --exclude container-selinux; rm -rf /var/cache /var/log/dnf* /var/log/yum.*
-RUN dnf install -y btrfs-progs-devel gpgme-devel device-mapper-devel
-
-# Adjust storage.conf to enable Fuse storage.
+# # Adjust storage.conf to enable Fuse storage.
 RUN touch /etc/containers/storage.conf
 
 
