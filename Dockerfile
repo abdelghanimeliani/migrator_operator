@@ -39,7 +39,7 @@ FROM fedora:latest
 # directories used by dnf that are just taking
 # up space.
 RUN yum -y install buildah fuse-overlayfs --exclude container-selinux; rm -rf /var/cache /var/log/dnf* /var/log/yum.*
-RUN dnf install btrfs-progs-devel gpgme-devel device-mapper-devel
+RUN dnf install -y btrfs-progs-devel gpgme-devel device-mapper-devel
 
 # Adjust storage.conf to enable Fuse storage.
 RUN sed -i -e 's|^#mount_program|mount_program|g' -e '/additionalimage.*/a "/var/lib/shared",' /etc/containers/storage.conf
