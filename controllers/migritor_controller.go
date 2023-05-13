@@ -213,7 +213,11 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Build an image scratch
 	s1, s2, err := buildah.Push(context.TODO(), "localhost/built_with_oprator", destImageRef, buildah.PushOptions{
+
 		SystemContext: &types.SystemContext{
+			DockerDaemonInsecureSkipTLSVerify: true,
+			DockerInsecureSkipTLSVerify:       types.OptionalBoolTrue,
+			OCIInsecureSkipTLSVerify:          true,
 			DockerAuthConfig: &types.DockerAuthConfig{
 				Username: migrator.Spec.RegistryUsername,
 				Password: migrator.Spec.RegistryPassword,
