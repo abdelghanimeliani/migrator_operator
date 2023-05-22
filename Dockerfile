@@ -28,9 +28,9 @@ RUN GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o manager main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
- From ubuntu
+From ubuntu
 RUN apt update
- RUN apt install -y libbtrfs-dev libgpgme-dev libdevmapper-dev buildah runc
+RUN apt install -y libbtrfs-dev libgpgme-dev libdevmapper-dev buildah runc
 RUN apt install -y fuse-overlayfs --exclude container-selinux; rm -rf /var/cache /var/log/dnf* /var/log/yum.*
 
 # FROM fedora:latest

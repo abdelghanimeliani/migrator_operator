@@ -145,17 +145,17 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	conf, err := config.Default()
 	if err != nil {
-		print("1================================================================================")
+		print("1==========================================================")
 		panic(err)
 	}
 	capabilitiesForRoot, err := conf.Capabilities("root", nil, nil)
 	if err != nil {
-		print("2================================================================================")
+		print("2==========================================================")
 		panic(err)
 	}
 	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/built_with_oprator")
 	if err != nil {
-		print("3================================================================================")
+		print("3===========================================================")
 		panic(errors.New("failed to parse image name"))
 
 	}
@@ -167,7 +167,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	importBuilder, err := buildah.NewBuilder(context.TODO(), buildStore, builderOptions)
 	if err != nil {
-		print("4================================================================================")
+		print("4=============================================================")
 		panic(err)
 
 	}
@@ -180,7 +180,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	addAndCopyOptions := buildah.AddAndCopyOptions{}
 	if err := importBuilder.Add("", true, addAndCopyOptions, checkpointPath); err != nil {
-		fmt.Println("5================================================================================")
+		fmt.Println("5=======================================================")
 		fmt.Println("this is the error", err)
 		panic(err)
 	}
@@ -194,9 +194,8 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Create checkpoint image
 	id, _, _, err := importBuilder.Commit(context.TODO(), imageRef, commitOptions)
 	if err != nil {
-		print("6================================================================================")
+		print("6==============================================================")
 		panic(err)
-
 	}
 	logrus.Debugf("Created checkpoint image: %s", id)
 	fmt.Println("build finish successfully ✅")
@@ -215,9 +214,9 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	s1, s2, err := buildah.Push(context.TODO(), "localhost/built_with_oprator", destImageRef, buildah.PushOptions{
 
 		SystemContext: &types.SystemContext{
-			DockerDaemonInsecureSkipTLSVerify: true,
-			DockerInsecureSkipTLSVerify:       types.OptionalBoolTrue,
-			OCIInsecureSkipTLSVerify:          true,
+			//DockerDaemonInsecureSkipTLSVerify: true,
+			//DockerInsecureSkipTLSVerify:       types.OptionalBoolTrue,
+			//OCIInsecureSkipTLSVerify:          true,
 			DockerAuthConfig: &types.DockerAuthConfig{
 				Username: migrator.Spec.RegistryUsername,
 				Password: migrator.Spec.RegistryPassword,
