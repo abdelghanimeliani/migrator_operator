@@ -1,0 +1,11 @@
+apiVersion: cache.eurecom.com/v1alpha1
+kind: Migritor
+metadata:
+  name: migrator-sample 
+spec:
+  source_pod_name: counters
+  source_pod_name_space: default 
+  source_pod_container: counter
+  destination: quay.io/abdelghanimeliani/restore-counter:LATEST
+  registryUsername: abdelghanimeliani
+  registryPassword: abgmelesi03101902
