@@ -71,6 +71,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	podName := &migrator.Spec.SourcePodName
 	containerName := &migrator.Spec.SourcePodContainer
 	sourcePodNamespace := &migrator.Spec.SourcePodNameSpace
+	sourceNodeid := &migrator.Spec.SourceNodeId
 
 	println("these are the source pod infrmations :", *sourcePodNamespace, *podName, *containerName)
 
@@ -98,7 +99,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	httpClient := &http.Client{Transport: transport}
 
 	// Send HTTPS POST request
-	checkpointurl := "https://worker-node01:10250/checkpoint/" + *sourcePodNamespace + "/" + *podName + "/" + *containerName
+	checkpointurl := "https://" + *sourceNodeid + ":10250/checkpoint/" + *sourcePodNamespace + "/" + *podName + "/" + *containerName
 	checkpointPostRequest, err := http.NewRequest("POST", checkpointurl, nil)
 	if err != nil {
 		panic(err)
