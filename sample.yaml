@@ -9,3 +9,4 @@ spec:
   destination: quay.io/abdelghanimeliani/restore-counter:LATEST
   registryUsername: abdelghanimeliani
   registryPassword: abgmelesi03101902
+  sourceNodeId: 10.0.2.15
