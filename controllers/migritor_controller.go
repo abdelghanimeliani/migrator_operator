@@ -66,7 +66,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	migrator := &cachev1alpha1.Migritor{}
 	err := r.Get(ctx, req.NamespacedName, migrator)
 	if err != nil {
-		println("********his is from the get*********", err)
+		println("this is from the Get request", err)
 	}
 	podName := &migrator.Spec.SourcePodName
 	containerName := &migrator.Spec.SourcePodContainer
@@ -76,6 +76,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	println("these are the source pod infrmations :", *sourcePodNamespace, *podName, *containerName)
 
 	// Load client certificate and key
+	println("Loading the client key and certificate")
 	cert, err := tls.LoadX509KeyPair("/vagrant/pki/apiserver-kubelet-client.crt", "/vagrant/pki/apiserver-kubelet-client.key")
 	if err != nil {
 		panic(err)
@@ -97,7 +98,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	transport := &http.Transport{TLSClientConfig: tlsConfig}
 	httpClient := &http.Client{Transport: transport}
-
+	println("Start Checkpointing ...")
 	// Send HTTPS POST request
 	checkpointurl := "https://" + *sourceNodeid + ":10250/checkpoint/" + *sourcePodNamespace + "/" + *podName + "/" + *containerName
 	checkpointPostRequest, err := http.NewRequest("POST", checkpointurl, nil)
@@ -146,17 +147,15 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	conf, err := config.Default()
 	if err != nil {
-		print("1==========================================================")
 		panic(err)
 	}
 	capabilitiesForRoot, err := conf.Capabilities("root", nil, nil)
 	if err != nil {
-		print("2==========================================================")
 		panic(err)
 	}
 	imageRef, err := is.Transport.ParseStoreReference(buildStore, "localhost/built_with_oprator")
 	if err != nil {
-		print("3===========================================================")
+		print("failed to parse image name")
 		panic(errors.New("failed to parse image name"))
 
 	}
@@ -168,7 +167,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	importBuilder, err := buildah.NewBuilder(context.TODO(), buildStore, builderOptions)
 	if err != nil {
-		print("4=============================================================")
+		print("failed to create a builder object")
 		panic(err)
 
 	}
@@ -181,12 +180,12 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	addAndCopyOptions := buildah.AddAndCopyOptions{}
 	if err := importBuilder.Add("", true, addAndCopyOptions, checkpointPath); err != nil {
-		fmt.Println("5=======================================================")
+		fmt.Println("can not add the checkpoint to the container")
 		fmt.Println("this is the error", err)
 		panic(err)
 	}
 
-	importBuilder.SetAnnotation("io.kubernetes.cri-o.annotations.checkpoint.name", "counter")
+	importBuilder.SetAnnotation("io.kubernetes.cri-o.annotations.checkpoint.name", containerName)
 	commitOptions := buildah.CommitOptions{
 		Squash:        true,
 		SystemContext: &types.SystemContext{},
@@ -195,7 +194,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Create checkpoint image
 	id, _, _, err := importBuilder.Commit(context.TODO(), imageRef, commitOptions)
 	if err != nil {
-		print("6==============================================================")
+		print("can not commit the image")
 		panic(err)
 	}
 	logrus.Debugf("Created checkpoint image: %s", id)
