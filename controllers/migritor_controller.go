@@ -193,7 +193,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		panic(err)
 	}
 
-	importBuilder.SetAnnotation("io.kubernetes.cri-o.annotations.checkpoint.name", containerName)
+	importBuilder.SetAnnotation("io.kubernetes.cri-o.annotations.checkpoint.name", *containerName)
 	commitOptions := buildah.CommitOptions{
 		Squash:        true,
 		SystemContext: &types.SystemContext{},
@@ -240,7 +240,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		fmt.Println("can't push the image :", err)
 		panic(err)
 	}
-
+	fmt.Println(s1, s2)
 	fmt.Println("push finish successfully ✅")
 
 	fmt.Println("time to push image: ", pushTime)
