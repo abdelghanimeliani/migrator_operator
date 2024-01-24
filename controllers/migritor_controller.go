@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	"time"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -98,7 +99,9 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	transport := &http.Transport{TLSClientConfig: tlsConfig}
 	httpClient := &http.Client{Transport: transport}
+
 	println("Start Checkpointing ...")
+	start := time.Now()
 	// Send HTTPS POST request
 	checkpointurl := "https://" + *sourceNodeid + ":10250/checkpoint/" + *sourcePodNamespace + "/" + *podName + "/" + *containerName
 	checkpointPostRequest, err := http.NewRequest("POST", checkpointurl, nil)
@@ -119,6 +122,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	fmt.Println(string(body))
 
+	checkpointTime:= time.Since(start)
 	var items models.CheckpointResponse
 
 	if err := json.Unmarshal(body, &items); err != nil { // Parse []byte to the go struct pointer
@@ -129,8 +133,12 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	fmt.Println("the checkpoint path is : ", checkpointPath)
 
 	fmt.Println("checkpointing done ... ✅")
+	fmt.Println("checkpoint time is : ", checkpointTime)
+
+
 	// trying to build
 
+	startbuild := time.Now()
 	fmt.Println("start building ...")
 
 	buildStoreOptions, err := storage.DefaultStoreOptionsAutoDetectUID()
@@ -193,16 +201,19 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Create checkpoint image
 	id, _, _, err := importBuilder.Commit(context.TODO(), imageRef, commitOptions)
+	buildTime:= time.Since(startbuild)
 	if err != nil {
 		print("can not commit the image")
 		panic(err)
 	}
 	logrus.Debugf("Created checkpoint image: %s", id)
 	fmt.Println("build finish successfully ✅")
+	fmt.Println("build time is : ", buildTime)
 
 	//end of the build
 
 	//start pushing
+	startPush := time.Now()
 	destImageRef, err := alltransports.ParseImageName("docker://" + migrator.Spec.Destination)
 
 	if err != nil {
@@ -224,14 +235,18 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		},
 		Store: buildStore,
 	})
+	pushTime:= time.Since(startPush)
 	if err != nil {
 		fmt.Println("can't push the image :", err)
 		panic(err)
 	}
-	fmt.Println(s1)
-	fmt.Println(s2)
+
 	fmt.Println("push finish successfully ✅")
 
+	fmt.Println("time to push image: ", pushTime)
+
+    totalTime:= time.Since(start)
+	fmt.Println("total time is", totalTime)
 	return ctrl.Result{}, nil
 }
 
