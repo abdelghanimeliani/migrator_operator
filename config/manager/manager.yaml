@@ -69,7 +69,7 @@ spec:
         - /manager
         args:
         - --leader-elect
-        image: docker.io/abdelghanimeliani/migrator:latest
+        image: docker.io/abdelghanimeliani/migrator_controller:latest
         name: manager
         volumeMounts:
         - mountPath: /vagrant/pki/
