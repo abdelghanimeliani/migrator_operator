@@ -115,7 +115,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	defer resp.Body.Close()
 
-	go DeletePod(*sourcePodNamespace,*podName)
+	DeletePod(*sourcePodNamespace,*podName)
 
 	// Print response status code and body
 	fmt.Println(resp.Status)
