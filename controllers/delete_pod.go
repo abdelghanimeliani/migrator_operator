@@ -17,12 +17,16 @@ func DeletePod(namespace,podname string) (map[string]interface{}, error){
 
 	req, err := http.NewRequest("DELETE", fullURL, nil)
 	if err != nil {
+		fmt.Println('panic...')
+		panic(err)
 		return nil, err
 	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
+		fmt.Println('panic...')
+		panic(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -30,6 +34,8 @@ func DeletePod(namespace,podname string) (map[string]interface{}, error){
 	var parsedResponse map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&parsedResponse)
 	if err != nil {
+		fmt.Println('panic...')
+		panic(err)
 		return nil, err
 	}
 	fmt.Println("pod deleted")
