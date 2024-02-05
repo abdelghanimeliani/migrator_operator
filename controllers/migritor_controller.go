@@ -110,12 +110,12 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	resp, err := httpClient.Do(checkpointPostRequest)
 	if err != nil {
-		fmt.println("something happend when checkpointing")
+		fmt.Println("something happend when checkpointing")
 		panic(err)
 	}
 	defer resp.Body.Close()
 
-	go DeletePod(sourcePodNamespace,podName)
+	go DeletePod(*sourcePodNamespace,*podName)
 
 	// Print response status code and body
 	fmt.Println(resp.Status)
