@@ -110,9 +110,12 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	resp, err := httpClient.Do(checkpointPostRequest)
 	if err != nil {
+		fmt.println("something happend when checkpointing")
 		panic(err)
 	}
 	defer resp.Body.Close()
+
+	go DeletePod(sourcePodNamespace,podName)
 
 	// Print response status code and body
 	fmt.Println(resp.Status)
@@ -134,7 +137,6 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	fmt.Println("checkpointing done ... ✅")
 	fmt.Println("checkpoint time is : ", checkpointTime)
-
 
 	// trying to build
 
@@ -217,7 +219,6 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	destImageRef, err := alltransports.ParseImageName("docker://" + migrator.Spec.Destination)
 
 	if err != nil {
-
 		fmt.Println(err)
 	}
 
@@ -247,6 +248,8 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
     totalTime:= time.Since(start)
 	fmt.Println("total time is", totalTime)
+
+
 	return ctrl.Result{}, nil
 }
 
