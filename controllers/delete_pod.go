@@ -6,7 +6,7 @@ import (
 	"net/url"
 )
 
-func DeletePod(namespace,podName string) (map[string]interface{}, error){
+func DeletePod(namespace,podname string) (map[string]interface{}, error){
 	fmt.Println("deleting original pod")
 	baseURL := "http://172.17.10.56:8080/v1/pods"
 	urlParams := url.Values{}
