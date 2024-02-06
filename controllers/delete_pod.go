@@ -8,7 +8,7 @@ import (
 
 func DeletePod(namespace,podname string) (map[string]interface{}, error){
 	fmt.Println("deleting original pod")
-	baseURL := "http://172.17.63.163:8080/v1/pods"
+	baseURL := "http://172.17.42.94:8080/v1/pods"
 	urlParams := url.Values{}
 	urlParams.Set("namespace", namespace)
 	urlParams.Set("name", podname)
