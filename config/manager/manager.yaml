@@ -72,7 +72,7 @@ spec:
         image: docker.io/abdelghanimeliani/migrator_controller:latest
         name: manager
         volumeMounts:
-        - mountPath: /vagrant/pki/
+        - mountPath: /etc/kubernetes/pki/
           name: credentials
         - mountPath: /var/lib/kubelet/checkpoints/
           name: checkpoints
