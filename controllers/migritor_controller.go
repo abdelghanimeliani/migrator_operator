@@ -78,12 +78,12 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Load client certificate and key
 	println("Loading the client key and certificate")
-	cert, err := tls.LoadX509KeyPair("/vagrant/pki/apiserver-kubelet-client.crt", "/vagrant/pki/apiserver-kubelet-client.key")
+	cert, err := tls.LoadX509KeyPair("/etc/kubernetes/pki/apiserver-kubelet-client.crt", "/etc/kubernetes/pki/apiserver-kubelet-client.key")
 	if err != nil {
 		panic(err)
 	}
 	// Load CA certificate
-	caCert, err := ioutil.ReadFile("/vagrant/pki/ca.crt")
+	caCert, err := ioutil.ReadFile("/etc/kubernetes/pki/ca.crt")
 	if err != nil {
 		panic(err)
 	}
