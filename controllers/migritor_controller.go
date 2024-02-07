@@ -78,7 +78,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Load client certificate and key
 	println("Loading the client key and certificate")
-	cert, err := tls.LoadX509KeyPair("/etc/kubernetes/pki/apiserver-kubelet-client.crt", "/kubernetes/pki/apiserver-kubelet-client.key")
+	cert, err := tls.LoadX509KeyPair("/etc/kubernetes/pki/apiserver-kubelet-client.crt", "/etc/kubernetes/pki/apiserver-kubelet-client.key")
 	if err != nil {
 		panic(err)
 	}
