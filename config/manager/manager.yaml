@@ -71,7 +71,7 @@ spec:
         - --leader-elect
         image: docker.io/abdelghanimeliani/migrator_controller:latest
         name: manager
-        volumeMounts:
+        volumeMounts: 
         - mountPath: /etc/kubernetes/pki/
           name: credentials
         - mountPath: /var/lib/kubelet/checkpoints/
@@ -111,7 +111,7 @@ spec:
       volumes:
       - name: credentials
         hostPath:
-          path: /vagrant/pki/
+          path: /etc/kubernetes/pki/
       - name: checkpoints
         hostPath:
           path: /var/lib/kubelet/checkpoints/
