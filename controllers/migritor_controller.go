@@ -115,7 +115,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	defer resp.Body.Close()
 
-	DeletePod(*sourcePodNamespace,*podName)
+	
 
 	// Print response status code and body
 	fmt.Println(resp.Status)
@@ -248,8 +248,8 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
     totalTime:= time.Since(start)
 	fmt.Println("total time is", totalTime)
-
-
+	
+	DeletePod(*sourcePodNamespace,*podName)
 	return ctrl.Result{}, nil
 }
 
