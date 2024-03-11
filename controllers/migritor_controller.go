@@ -17,7 +17,6 @@ limitations under the License.
 package controllers
 
 import (
-	"time"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -26,6 +25,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	cachev1alpha1 "github.com/abdelghanimeliani/migrator_operator/api/v1alpha1"
 	"github.com/abdelghanimeliani/migrator_operator/models"
@@ -115,8 +115,6 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	defer resp.Body.Close()
 
-	
-
 	// Print response status code and body
 	fmt.Println(resp.Status)
 	body, err := ioutil.ReadAll(resp.Body)
@@ -125,7 +123,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	fmt.Println(string(body))
 
-	checkpointTime:= time.Since(start)
+	checkpointTime := time.Since(start)
 	var items models.CheckpointResponse
 
 	if err := json.Unmarshal(body, &items); err != nil { // Parse []byte to the go struct pointer
@@ -203,7 +201,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Create checkpoint image
 	id, _, _, err := importBuilder.Commit(context.TODO(), imageRef, commitOptions)
-	buildTime:= time.Since(startbuild)
+	buildTime := time.Since(startbuild)
 	if err != nil {
 		print("can not commit the image")
 		panic(err)
@@ -236,7 +234,7 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		},
 		Store: buildStore,
 	})
-	pushTime:= time.Since(startPush)
+	pushTime := time.Since(startPush)
 	if err != nil {
 		fmt.Println("can't push the image :", err)
 		panic(err)
@@ -246,10 +244,10 @@ func (r *MigritorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	fmt.Println("time to push image: ", pushTime)
 
-    totalTime:= time.Since(start)
+	totalTime := time.Since(start)
 	fmt.Println("total time is", totalTime)
-	
-	DeletePod(*sourcePodNamespace,*podName)
+
+	//DeletePod(*sourcePodNamespace,*podName)
 	return ctrl.Result{}, nil
 }
 
